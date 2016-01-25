@@ -1,5 +1,5 @@
 # zerg
-基于docker的分布式爬虫集群
+基于docker的分布式爬虫服务
 
 ![](https://raw.github.com/huichen/zerg/master/doc/zerg.png)
 
