@@ -23,15 +23,17 @@ func main() {
 		log.Fatal("--url 参数不能为空")
 	}
 
-	dcc, err := zerg_client.NewZergClient(*endPoints, *serviceName)
+	zc, err := zerg_client.NewZergClient(*endPoints, *serviceName)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer zc.Close()
 
 	request := pb.CrawlRequest{Url: *url, Timeout: 10000, CrawlFrequency: *freq}
 	log.Printf("开始抓取")
 	for i := 0; i < 10; i++ {
-		client, err := dcc.Get(*url)
+		// 调用 client.Crawl 前必须先调用 Get 命令获取 client，client 通过 url 的一致性哈希进行分配
+		client, err := zc.Get(*url)
 		if err != nil {
 			log.Fatal(err)
 		}

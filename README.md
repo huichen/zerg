@@ -49,7 +49,7 @@ registrator 会自动注册这些服务到 etcd。如果单机有多个IP，你�
 
 抓取的页面内容会通过 docker volume 存储在 /opt/zerg_cache 目录下。
 
-#### 第四部：测试
+#### 第四部：调用样例代码
 
 进入 examples 目录，运行
 
