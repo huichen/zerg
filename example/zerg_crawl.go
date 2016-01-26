@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	address     = flag.String("address", ":50051", "服务器地址")
 	url         = flag.String("url", "", "URL")
 	freq        = flag.Int64("freq", 0, "抓取频率")
 	endPoints   = flag.String("endpoints", "", "半角逗号分隔的 etcd 接入点列表，每个接入点地址以 http:// 开始")
@@ -19,30 +18,30 @@ var (
 func main() {
 	flag.Parse()
 
-	if *url == "" {
-		log.Fatal("--url 参数不能为空")
-	}
-
+	// 创建新 ZergClient
 	zc, err := zerg_client.NewZergClient(*endPoints, *serviceName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer zc.Close()
 
-	request := pb.CrawlRequest{Url: *url, Timeout: 10000, CrawlFrequency: *freq}
-	log.Printf("开始抓取")
-	for i := 0; i < 10; i++ {
-		// 调用 client.Crawl 前必须先调用 Get 命令获取 client，client 通过 url 的一致性哈希进行分配
-		client, err := zc.Get(*url)
+	// 调用 client.Crawl 前必须先调用 Get 命令获取 CrawlClient，通过 url 的一致性哈希进行分配
+	// 不同的 url 要分别调用 Get 得到不同的 CrawlClient
+	if crawlClient, err := zc.Get(*url); err == nil {
+		// RPC 调用
+		request := pb.CrawlRequest{
+			Url:            *url,
+			Timeout:        10000, // 超时 10 秒
+			CrawlFrequency: *freq,
+		}
+		response, err := crawlClient.Crawl(context.Background(), &request)
 		if err != nil {
+			// 处理异常
 			log.Fatal(err)
 		}
 
-		response, err := client.Crawl(context.Background(), &request)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("%+v", response.Metadata)
-		log.Printf("%d", len(response.Content))
+		// 处理返回结果
+		log.Printf("metadata = %+v", response.Metadata)
+		log.Printf("page content length = %d", len(response.Content))
 	}
 }

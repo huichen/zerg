@@ -18,11 +18,11 @@
 
 我把 etcd 容器化了，并开发了脚本使得部署 etcd cluster 非常容易，见 [github.com/huichen/etcd_docker](https://github.com/huichen/etcd_docker)
 
-为了容灾，请至少在三台服务器上运行 etcd 实例。为了方便调用，你可以固定 etc endpoint 的端口号，并在所有机器上手工添加 etcd host 的hostname。
+为了容灾，请至少在三台服务器上运行 etcd 实例。为了方便调用，你可以固定 etc endpoint 的端口号，并在所有机器上手工添加 etcd host 的 hostname。
 
 #### 第二步：启动 registrator 服务发现程序
 
-你需要在集群的每一台服务器上都运行 registrator，这使得我们可以自动发现和注册 dist_crawl 服务
+你需要在集群的每一台服务器上都运行 registrator，这使得我们可以自动发现和注册分布式服务
 
 ```
 docker run -d --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/docker.sock \
@@ -45,7 +45,7 @@ docker run -d --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/d
 docker run -d -P -v /opt/zerg_cache:/cache unmerged/zerg
 ```
 
-registrator 会自动注册这些服务到 etcd。如果单机有多个IP，你可以单机启动多个容器，并在 -P 中分别指定IP。
+registrator 会自动注册这些服务到 etcd。如果单机有多个 IP，你可以单机启动多个容器，并在 -P 中分别指定 IP。
 
 抓取的页面内容会通过 docker volume 存储在 /opt/zerg_cache 目录下。
 
