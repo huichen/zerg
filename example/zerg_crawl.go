@@ -13,6 +13,7 @@ var (
 	freq        = flag.Int64("freq", 0, "抓取频率")
 	endPoints   = flag.String("endpoints", "", "半角逗号分隔的 etcd 接入点列表，每个接入点地址以 http:// 开始")
 	serviceName = flag.String("service_name", "/services/zerg", "zerg 服务名")
+	method      = flag.String("method", "GET", "HTTP 请求类型：GET HEAD POST POSTFORM")
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 			Url:            *url,
 			Timeout:        10000, // 超时 10 秒
 			CrawlFrequency: *freq,
+			Method:         pb.Method(pb.Method_value[*method]),
 		}
 		response, err := crawlClient.Crawl(context.Background(), &request)
 		if err != nil {
