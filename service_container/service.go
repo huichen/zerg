@@ -72,7 +72,7 @@ func (s *server) internalCrawl(in *pb.CrawlRequest) (*pb.CrawlResponse, error) {
 						return &response, nil
 					}
 					if time.Now().UnixNano()-response.Metadata.LastCrawlTimestamp <
-						in.CrawlFrequency*int64(time.Millisecond) {
+						in.RecrawlTtl*int64(time.Millisecond) {
 						if _, err := os.Stat(cacheFilename); err == nil {
 							content, err := ioutil.ReadFile(cacheFilename)
 							if err == nil {
@@ -112,7 +112,8 @@ func (s *server) internalCrawl(in *pb.CrawlRequest) (*pb.CrawlResponse, error) {
 	} else if in.Method == pb.Method_HEAD {
 		resp, err = client.Head(in.Url)
 	} else if in.Method == pb.Method_POST {
-		resp, err = client.Post(in.Url, in.PostBody, nil)
+		buff := bytes.NewBufferString(in.PostBody)
+		resp, err = client.Post(in.Url, in.BodyType, buff)
 	} else if in.Method == pb.Method_POSTFORM {
 		formKeys := url.Values{}
 		for _, kv := range in.FormValues {

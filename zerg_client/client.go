@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/huichen/consistent_service"
 	pb "github.com/huichen/zerg/protos"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"strings"
 )
@@ -39,13 +40,13 @@ func NewZergClient(endpoints string, servicename string) (*ZergClient, error) {
 	return zc, nil
 }
 
-func (zc *ZergClient) Get(url string) (pb.CrawlClient, error) {
+func (zc *ZergClient) Crawl(in *pb.CrawlRequest, opts ...grpc.CallOption) (*pb.CrawlResponse, error) {
 	// 检查是否已经初始化
 	if !zc.initialized {
 		return nil, errors.New("DistCrawlClient 没有初始化")
 	}
 
-	node, err := zc.consistentService.GetNode(url)
+	node, err := zc.consistentService.GetNode(in.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func (zc *ZergClient) Get(url string) (pb.CrawlClient, error) {
 		zc.clients[node] = client
 	}
 
-	return zc.clients[node], err
+	return zc.clients[node].Crawl(context.Background(), in, opts...)
 }
 
 func (zc *ZergClient) Close() {
