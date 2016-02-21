@@ -9,10 +9,9 @@
 * 服务自动发现和注册（基于 etcd 和 registrator）
 * 负载均衡 + 一致性哈希
 * 服务端客户端通信基于 gRPC，支持多种编程语言的客户端
-* 可设置抓取超时、页面重新抓取频率等
-* 支持 GET、HEAD、POST、POSTFORM 四种方法
+* 可设置抓取超时
+* 支持 GET、HEAD、POST 方法
 * 支持自定义 header
-* 基于 docker volume 和文件系统的持久化存储
 
 ### 如何部署
 
@@ -44,12 +43,10 @@ docker run -d --name=registrator --net=host --volume=/var/run/docker.sock:/tmp/d
 这会生成 unmerged/zerg 容器。然后在集群的每台服务器上启动容器：
 
 ```
-docker run -d -P -v /opt/zerg_cache:/cache unmerged/zerg
+docker run -d -P unmerged/zerg
 ```
 
 registrator 会自动注册这些服务到 etcd。如果单机有多个 IP，你可以单机启动多个容器，并在 -P 中分别指定 IP。
-
-抓取的页面内容会通过 docker volume 存储在 /opt/zerg_cache 目录下。
 
 #### 第四步：调用样例代码
 

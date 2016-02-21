@@ -15,12 +15,6 @@ message CrawlRequest {
   // 抓取超时限制，单位毫秒，设为 0 时无超时
   int64 timeout = 2;
 
-  bool use_cache = 3;
-
-  // 单位毫秒，当页面抓取时间比当前时间早超过 recrawl_ttl（含）时重新抓取，当该值为 0 时始终重新抓取
-  // 仅对 GET 和 HEAD 两类请求有效，POST 和 POSTFORM 始终重新抓取
-  int64 recrawl_ttl = 4;
-
   // 是否仅返回 metadata 而忽略 content
   bool only_return_metadata = 5;
 
@@ -33,16 +27,12 @@ message CrawlRequest {
   // POST body，仅当请求类型为 POST 时有效
   string post_body = 8;
   string body_type = 9;
-
-  // POST form，仅当请求类型为 POSTFORM 时有效
-  repeated KV form_values = 10;
 }
 
 enum Method {
   GET = 0;
   HEAD = 1;
   POST = 2;
-  POSTFORM = 3;
 }
 
 message KV {
@@ -53,12 +43,10 @@ message KV {
 message CrawlResponse {
   Metadata metadata = 1;
   string content = 2;
-  bool is_fresh_crawl = 3;  // 是否是在这次请求中抓取的
 }
 
 message Metadata {
   uint32 length = 1;
-  int64 last_crawl_timestamp = 2;
   repeated KV header = 3;
   string status = 4;
   int32 status_code = 5;

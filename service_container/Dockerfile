@@ -1,4 +1,4 @@
 FROM busybox
 EXPOSE 5000
 ADD / /
-CMD ./service --page_cache_dir /cache --address :5000
+CMD ./service --address :5000

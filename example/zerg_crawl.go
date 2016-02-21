@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	url         = flag.String("url", "", "URL")
-	ttl         = flag.Int64("ttl", 0, "重新抓取TTL")
 	endPoints   = flag.String("endpoints", "", "半角逗号分隔的 etcd 接入点列表，每个接入点地址以 http:// 开始")
 	serviceName = flag.String("service_name", "/services/zerg", "zerg 服务名")
-	method      = flag.String("method", "GET", "HTTP 请求类型：GET HEAD POST POSTFORM")
+	method      = flag.String("method", "GET", "HTTP 请求类型：GET HEAD POST")
+	url         = flag.String("url", "", "URL")
 )
 
 func main() {
@@ -27,10 +26,9 @@ func main() {
 
 	// 调用 zerg 服务
 	request := pb.CrawlRequest{
-		Url:        *url,
-		Timeout:    10000, // 超时 10 秒
-		RecrawlTtl: *ttl,
-		Method:     pb.Method(pb.Method_value[*method]),
+		Url:     *url,
+		Timeout: 10000, // 超时 10 秒
+		Method:  pb.Method(pb.Method_value[*method]),
 	}
 	response, err := zc.Crawl(&request)
 	if err != nil {
