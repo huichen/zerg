@@ -2,7 +2,7 @@ package zerg_client
 
 import (
 	"errors"
-	"github.com/huichen/consistent_service"
+	"github.com/huichen/load_balanced_service"
 	pb "github.com/huichen/zerg/protos"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -10,12 +10,12 @@ import (
 )
 
 type ZergClient struct {
-	endPoints         []string
-	serviceName       string
-	consistentService consistent_service.ConsistentService
-	clients           map[string]pb.CrawlClient
-	conns             map[string]*grpc.ClientConn
-	initialized       bool
+	endPoints   []string
+	serviceName string
+	lbService   load_balanced_service.LoadBalancedService
+	clients     map[string]pb.CrawlClient
+	conns       map[string]*grpc.ClientConn
+	initialized bool
 }
 
 // endPoints: 逗号分隔的 etcd 接入点列表，每个接入点以 http:// 开始
@@ -32,7 +32,7 @@ func NewZergClient(endpoints string, servicename string) (*ZergClient, error) {
 	}
 	zc.clients = make(map[string]pb.CrawlClient)
 	zc.conns = make(map[string]*grpc.ClientConn)
-	err := zc.consistentService.Connect(servicename, ep)
+	err := zc.lbService.Connect(servicename, ep)
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +43,10 @@ func NewZergClient(endpoints string, servicename string) (*ZergClient, error) {
 func (zc *ZergClient) Crawl(in *pb.CrawlRequest, opts ...grpc.CallOption) (*pb.CrawlResponse, error) {
 	// 检查是否已经初始化
 	if !zc.initialized {
-		return nil, errors.New("DistCrawlClient 没有初始化")
+		return nil, errors.New("ZergClient 没有初始化")
 	}
 
-	node, err := zc.consistentService.GetNode(in.Url)
+	node, err := zc.lbService.GetNode()
 	if err != nil {
 		return nil, err
 	}
