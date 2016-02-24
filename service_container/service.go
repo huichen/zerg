@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -54,16 +55,26 @@ func (s *server) internalCrawl(in *pb.CrawlRequest) (*pb.CrawlResponse, error) {
 	}
 
 	// 根据不同的 method 类型，分别调用不同 HTTP 方法
-	var resp *http.Response
 	var err error
+	var req *http.Request
 	if in.Method == pb.Method_GET {
-		resp, err = client.Get(in.Url)
+		req, err = http.NewRequest("GET", in.Url, nil)
 	} else if in.Method == pb.Method_HEAD {
-		resp, err = client.Head(in.Url)
+		req, err = http.NewRequest("HEAD", in.Url, nil)
 	} else if in.Method == pb.Method_POST {
 		buff := bytes.NewBufferString(in.PostBody)
-		resp, err = client.Post(in.Url, in.BodyType, buff)
+		req, err = http.NewRequest("POST", in.Url, buff)
+		req.Header.Add("Content-Type", in.BodyType)
+		req.Header.Add("Content-Length", strconv.Itoa(len(in.PostBody)))
 	}
+
+	// 充填 header
+	for _, header := range in.Header {
+		req.Header.Add(header.Key, header.Value)
+	}
+
+	// 发送请求
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
