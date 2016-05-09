@@ -177,16 +177,22 @@ func RegisterCrawlServer(s *grpc.Server, srv CrawlServer) {
 	s.RegisterService(&_Crawl_serviceDesc, srv)
 }
 
-func _Crawl_Crawl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _Crawl_Crawl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CrawlRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(CrawlServer).Crawl(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(CrawlServer).Crawl(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.Crawl/Crawl",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CrawlServer).Crawl(ctx, req.(*CrawlRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Crawl_serviceDesc = grpc.ServiceDesc{
